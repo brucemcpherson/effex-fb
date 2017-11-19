@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "public": "public",
+
+    // the api directs here
+   "rewrites": [ {
+      "source": "/v2/**", 
+      "function": "api"
+    } ]
+    
+    // static files will pick up directly
+    
+  }
+}
