@@ -58,17 +58,77 @@ module.exports = (function(ns) {
     const pack = manage.getCouponPack(params.key, params);
     return Promise.resolve(pack);
   };
-
+  
   /**
-   * /admin/account/:accountid
+   * /admin/profile
+   * need an authID which is the firebase id
+   * if create is true then we're allowed to create a new profile
    */
-  ns.getAccount = (params) => {
+  ns.addAccount = (params) => {
     
     // make sure we have auth and admin
     const pack = manage.checkPriv (params); 
     if (!pack.ok) return Promise.resolve (pack);
 
-    return ns.checkAccount (pack , params.authid); 
+    // next we need to get the profile
+    // this wil use the params.create if tru then it will create both
+    // a new profile and a new account (if it doesnt already exit)
+    return dbStore.profile ({
+      authId:params.authid || params.data.authid, 
+      createAccount:true, 
+      planId:params.planid
+    });
+
+  };
+  
+
+  /**
+   * /admin/profile
+   * need an authID which is the firebase id
+   * if create is true then we're allowed to create a new profile
+   * the planID can be passed or it will take it
+   * from the default
+   * accounts inherit a planID from the user
+   */
+  ns.profile = (params, readOnly) => {
+    
+    // make sure we have auth and admin
+    const pack = manage.checkPriv (params); 
+    if (!pack.ok) return Promise.resolve (pack);
+
+    return dbStore.profile ({
+      authId:params.authid || params.data.authid, 
+      createProfile:readOnly ? false: true, 
+      planId:params.planid
+    });
+    
+
+  };
+  
+  
+  /**
+   * /admin/account/:accountid
+   */
+  ns.getAccount = (params) => {
+    
+    const pack = manage.goodPack({
+      accountId:params.accountid
+    });
+    
+    return ns.profile (params, true)
+      .then (result=> {
+        // this is the entire profile so trim it down
+        manage.errify(result.ok , result.code , result.error, pack);
+        manage.errify (result.value && result.value.accounts && result.value.accounts[params.accountid],"NOT_FOUND","account not found",pack);
+       
+        if (pack.ok) {
+          pack.value = result.value.accounts[pack.accountId];
+        }
+        return pack;
+      })
+      .catch(err=>Promise.resolve(manage.errify(false,"INTERNAL",err,pack)));
+      
+
   };
   
   // get stats from analytics
@@ -81,35 +141,26 @@ module.exports = (function(ns) {
   
  
   /**
-   * check an account exists
-   * @param {object} pack the pack so far
-   * @param {string} [authid] if specified, then make sure it matches the uid in the account
+   * check an account exists - it doesnt need an authid or an admin key
+   * as it's generally used to check an account is active and exists 
+   * for regular operations.
+   * @param {object||string} pack the pack so far or an account ID
    * @return {Promise} the updated pack
    */
-  ns.checkAccount = (inPack, authid) => {
-    const pack = handy.clone(inPack);
+  ns.checkAccount = (account) => {
 
-    if (pack.ok) {
+    const pack = typeof account === "object" ? account : manage.goodPack ({
+      accountId:account
+    });
 
-      return dbStore.getAccount(pack.accountId)
-        .then(function(result) {
-          if (manage.errify(result.ok, result.code, result.error, pack).ok) {
-            var ob = result.value;
-            manage.errify(ob.active, "NOT_FOUND", "account is not active", pack);
-            manage.errify(!authid || authid === ob.authId, "FORBIDDEN", "authid not valid for this account", pack);
-          }
-          if (!pack.ok) {
-            pack.key = "";
-            pack.validtill = "";
-          }
-          return pack;
-        });
-    }
-    else {
-      return Promise.resolve(pack);
-    }
+    // now to a query based on the accountID (we don't necessary know the authID, so it can't be a direct)
+    return dbStore.queryAccounts (pack.accountId)
+    .then(result=>{
+      return manage.errify (result.ok , result.code, result.error , pack);
+    })
+    .catch(err=>Promise.resolve (false, "INTERNAL", err ,pack));
+
   };
-
   /**
    * generate other kinds of keys
    */
@@ -1054,51 +1105,48 @@ module.exports = (function(ns) {
         pack);
         
   };
+  
+  /**
+   * delete a profile
+   */
+  ns.removeProfile =   (params) => {
+
+    // we can use profile for this too 
+     // make sure we have auth and admin
+    const pack = manage.checkPriv (params); 
+    if (!pack.ok) return Promise.resolve (pack);
+
+    // next we need to get the profile
+    // this wil use the params.create if tru then it will create both
+    // a new profile and a new account (if it doesnt already exit)
+    return dbStore.profile ({
+      authId:params.authid||params.data.authid, 
+      removeProfile:true
+    });
+
+  };
+  
   /**
    * delete an account
    */
   ns.removeAccount =   (params) => {
 
-    // make sure we have auth and admin
-    const pack = manage.checkPriv (params); 
-    if (!pack.ok) return Promise.resolve (pack);
-    pack.code = manage.findCode ("NO_CONTENT");
-
-     
-    return ns.checkAccount(pack, pack.authId)
-      .then(result=> {
-        return result.ok ? dbStore.removeAccount(result) : result;
-      })
-      .then (result=>{
-        return manage.errify(
-          result.ok,
-          result.code,
-          result.error,
-          pack
-        );  
-      });
-
-
-  };
-
-
-  /**
-   * register an account
-   * /admin/register/:accountid
-   */
-  ns.registerAccount = (params) => {
-
-    // make sure we have auth and admin
+    // we can use profile for this too 
+     // make sure we have auth and admin
     const pack = manage.checkPriv (params); 
     if (!pack.ok) return Promise.resolve (pack);
 
-    
-    pack.active  = params.hasOwnProperty("active") ? (params.active ? true:false) : true;
-    
-    return dbStore.setAccount (pack)
-      .then (result => manage.errify (result , result.code , result.error , pack, "CREATED"));
+    // next we need to get the profile
+    // this wil use the params.create if tru then it will create both
+    // a new profile and a new account (if it doesnt already exit)
+    return dbStore.profile ({
+      accountId:params.accountid,
+      authId:params.authid||params.data.authid, 
+      removeAccount:true
+    });
 
   };
+
 
 
   /**

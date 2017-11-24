@@ -166,11 +166,50 @@ module.exports = (function(ns) {
   ns.app.get('/generate/:bosskey/:mode', 
     (req, res) => res.prom(addOp_("generateKeys",respond.generateKeys(paramSquash_(req))))
   ); 
+ 
+  // admin - can only be called with an profile authid as a body or url pararm
+  // PROFILES AND ACCOUNTS
+
+  // add an account
+  ns.app.put('/admin/addaccount', function(req, res) {
+    res.prom(addOp_("admin/addAccount",respond.addAccount(paramSquash_(req)),"set"));
+  });
+  
+  // delete an account
+  ns.app.delete('/admin/account/:accountid', function(req, res) {
+    res.prom(addOp_("admin/removeAccount",respond.removeAccount(paramSquash_(req)),"remove"));
+  });
+  
+  // check acccount exists and is active
+  ns.app.get('/admin/account/:accountid', function(req, res) {
+    res.prom(addOp_("admin/getAccount",respond.getAccount(paramSquash_(req))));
+  });
+  
+  // this is a PUT because this gets a a user profile
+  // for a firebase ID in the body - actually the authId
+  // alsp needs an admin key
+  ns.app.put('/admin/profile', function(req, res) {
+    res.prom(addOp_("admin/profilePut",respond.profile(paramSquash_(req))));
+  });
+  
+  // the same as profile, except it doesn't create anything
+  ns.app.get("/admin/profile", function(req, res) {
+    res.prom(addOp_("admin/profileGet",respond.profile(paramSquash_(req),true)));
+  });
+  
+  // delete a profile
+  ns.app.delete("/admin/profile", function(req, res) {
+    res.prom(addOp_("admin/removeProfile",respond.removeProfile(paramSquash_(req))));
+  });
+  
 
 
-      
-  // admin - can only be called with an admin key
+
+
+
   // generate a bossKey
+
+
 
   // this is a special admin one for deleting all expired items
   ns.app.delete("/admin/expired", 
@@ -191,17 +230,8 @@ module.exports = (function(ns) {
   ns.app.get("/admin/account/:accountid/boss/:plan", 
     (req, res) => res.prom(addOp_("admin/generateBoss",respond.generateBoss(paramSquash_(req)),'set'))
   );
-  
-  // register an account
-  ns.app.post("/admin/register/:accountid", function(req, res) {
-    res.prom(addOp_("admin/registerAccount",respond.registerAccount(paramSquash_(req)),"set"));
-  });
-  
-  
-  // delete an account
-  ns.app.delete("/admin/remove/:accountid", function(req, res) {
-    res.prom(addOp_("admin/removeAccount",respond.removeAccount(paramSquash_(req)),"remove"));
-  });
+
+
   
   
   // prune any boss keys associated with an account .. in other words, delete boss keys for an account
@@ -226,11 +256,6 @@ module.exports = (function(ns) {
     res.prom(addOp_("admin/getBosses",respond.getBosses(paramSquash_(req))));
   });
     
-  // check acccount exists and is active
-  ns.app.get("/admin/account/:accountid", function(req, res) {
-    res.prom(addOp_("admin/getAccount",respond.getAccount(paramSquash_(req))));
-  });
-  
 
   // generate keys - thisll be retired and replaced by the one above
   ns.app.get('/:bosskey/:mode', 
@@ -239,7 +264,7 @@ module.exports = (function(ns) {
   
   // deal with 404
   ns.app.all ("/*" , function (req, res) {
-    res.status (404).send({ok:false, code:404});
+    res.status (404).send({ok:false, code:404,error:"api path doesnt exist"});
   });
   
   return ns;

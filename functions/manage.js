@@ -52,20 +52,22 @@ module.exports = (function (ns) {
     return pack;
   };
 
+  ns.getDefaultPlan = () => secrets.defaultPlan;
+  
   ns.checkAuthId = (key, pack) =>
     ns.errify(key, "UNAUTHORIZED", "You need to provide an authid key to create a boss key", pack);
   
   /**
    * check some params have an auth key, an account and also an admin key
    */
-  ns.checkPriv = (params , checkAuth) => {
+  ns.checkPriv = (params) => {
     
     const aid = parseInt(params.accountid,32).toString(32); 
     const authid = (params.data && params.data.authid ) || params.authid;
     const pack = ns.errify(
-      aid && authid && params.admin, 
+      aid && (authid ) && params.admin, 
       "BAD_REQUEST",
-      'you need an authid, account id, and admin key for this operation', 
+      'you need an account id, and admin key and authid  for this operation', 
       ns.goodPack({
         authId:authid,
         accountId: aid,

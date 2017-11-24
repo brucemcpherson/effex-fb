@@ -319,6 +319,155 @@ module.exports = (function(ns) {
   ns.setSlotLimit = (accountId, ob) => set_("slotlimits", accountId, ob);
 
   /**
+   * gets a user profile
+   * or potentially creates one
+   * it will also create an account if necessary
+   */
+  ns.profile = (options) => {
+
+    // add the new user to the profile
+    const now = new Date().getTime();
+    let addAc, addPr, remAc, remPr;
+    
+    return db.runTransaction(t => {
+
+      // first get the current id there is one
+      return t.get(profileRef_(options.authId))
+        .then(doc => {
+          const pack = pack_(doc);
+          pack.newProfile = false;
+          const missing = pack.code === manage.findCode("NOT_FOUND");
+          addAc = !missing && options.createAccount;
+          addPr = missing && options.createProfile;
+          remAc = options.removeAccount;
+          remPr = options.removeProfile;
+          
+          // this is bad as we havent a profile, and we cant add it.
+          if (missing && !addPr) return pack;
+          if (missing && remAc) return pack;
+          if (missing && remPr) return pack;
+          if (missing)pack.ok = true;
+          if (!pack.ok) return pack;
+          
+          // can create a profile or account using the same code
+          if (addPr) {
+            pack.value = {
+              created: now,
+              modified: now,
+              active: true,
+              expires: 0,
+              planId:options.planId || manage.getDefaultPlan(),
+              accounts: {}
+            };
+            
+          }
+
+          // check that all is ok with the struct of the profile for adding accounts
+          if (addPr || addAc ) {
+            manage.errify(typeof pack.value.accounts === "object", "INTERNAL", "accounts list missing from profile", pack);
+            if (!pack.ok) return pack;
+
+            return t.get(countersRef_())
+              .then(countDoc => {
+                const p = pack_(countDoc);
+                pack.ok = true;
+                manage.errify(p.ok, p.code, p.error, pack);
+                if (!pack.ok) return pack;
+
+                // need to get the next counter
+                manage.errify(!isNaN(p.value.accounts), "INTERNAL", "bad accounts counter", pack);
+                if (!pack.ok) return pack;
+
+                // add an account
+                pack.accountId = (p.value.accounts + 1).toString(32);
+                pack.value.accounts[pack.accountId] = {
+                  planId: options.planId || pack.value.planId,
+                  active: true,
+                  created: now,
+                  modified: now,
+                  expires: 0
+                };
+
+                // need to update the counter
+                t.update(countersRef_(), { accounts: p.value.accounts + 1 }, { merge: true });
+                
+                // set the created fla id needed
+                pack.newProfile = addPr;
+                
+                return pack;
+              });
+          }
+          else if (remAc) {
+            // find the account
+            pack.accountId = options.accountId;
+            manage.errify (
+              pack.value && pack.value.accounts && pack.value.accounts[pack.accountId],
+              "NOT_FOUND",
+              "account " + pack.accountId + " not found",
+              pack,
+              "NO_CONTENT"
+            );
+            if (pack.ok) {
+              delete pack.value.accounts[pack.accountId];
+            }
+            return pack;
+          }
+          else {
+            return pack;
+          }
+        })
+        .then(pack => {
+          if (!pack.ok) return pack;
+          
+
+          if (addPr || addAc || remAc) {
+            // set the updated profiles
+            t.set(profileRef_(options.authId), pack.value);
+            return pack;
+          }
+          
+          else if (remPr) {
+            // remove the profile altogether
+            t.delete(profileRef_(options.authId));
+            return manage.errify (pack.ok , pack.code , pack.error ,null, "NO_CONTENT");
+            
+          }
+
+          return pack;
+
+        })
+        .catch(err => Promise.resolve(manage.errify(false, "INTERNAL", err)));
+    });
+  };
+  
+  /**
+   * query profiles
+   */
+  ns.queryAccounts = (accountId) => {
+    
+    const now = new Date().getTime();
+    const query = db.collection("profiles")
+      .where ("accounts."+accountId+".active", "==", true)
+      .where ("active","==",true);
+      
+    return query.get()
+      .then(result => result.docs.filter((d) => {
+        const dat = d.exists && d.data();
+        const ob = dat && dat.accounts[accountId];
+        return dat && ob && (!ob.expires || ob.expires > now) && ob.active && (dat.expires > now || !dat.expires) && dat.active;
+      }))
+      .then (docs=> { 
+        const rs = docs.map(d => {
+          return { authid:d.id, account:d.data().accounts[accountId]};
+        });
+        return manage.goodPack (undefined, rs);
+      })
+      .catch(err => Promise.resolve(manage.errify(false, "INTERNAL", err)));
+      
+      
+  };
+  
+  /**
    * query bosses for this
    */
   ns.queryBosses = (accountId) => {
@@ -376,6 +525,8 @@ module.exports = (function(ns) {
   const bossRef_ = (key) => db.collection("bosses").doc(handy.checkString(key));
 
 
+  const countersRef_ = () => db.collection("services").doc("counters");
+  const profileRef_ = (authId) => db.collection("profiles").doc(handy.checkString(authId));
 
   const aliasRef_ = (alias, key) =>
     db.collection("aliases")
@@ -573,6 +724,8 @@ module.exports = (function(ns) {
 
 
   };
+  
+
   /**
    * prune bosses
    */

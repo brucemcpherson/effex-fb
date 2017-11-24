@@ -1,0 +1,58 @@
+[debug] [2017-11-23T12:10:28.619Z] ----------------------------------------------------------------------
+[debug] [2017-11-23T12:10:28.622Z] Command:       /home/ubuntu/.nvm/versions/node/v6.11.2/bin/node /home/ubuntu/.nvm/versions/node/v6.11.2/bin/firebase experimental:functions:shell
+[debug] [2017-11-23T12:10:28.622Z] CLI Version:   3.15.2
+[debug] [2017-11-23T12:10:28.622Z] Platform:      linux
+[debug] [2017-11-23T12:10:28.622Z] Node Version:  v6.11.2
+[debug] [2017-11-23T12:10:28.623Z] Time:          Thu Nov 23 2017 12:10:28 GMT+0000 (UTC)
+[debug] [2017-11-23T12:10:28.623Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2017-11-23T12:10:28.636Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2017-11-23T12:10:28.636Z] > authorizing via signed-in user
+[debug] [2017-11-23T12:10:28.639Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/effex-fb  
+ Thu Nov 23 2017 12:10:28 GMT+0000 (UTC)
+[debug] [2017-11-23T12:10:29.262Z] <<< HTTP RESPONSE 200
+[debug] [2017-11-23T12:10:29.263Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/effex-fb/tokens  
+ Thu Nov 23 2017 12:10:29 GMT+0000 (UTC)
+[debug] [2017-11-23T12:10:30.162Z] <<< HTTP RESPONSE 200
+[info] i  functions: Preparing to emulate functions.
+[debug] [2017-11-23T12:10:30.518Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/effex-fb  
+ Thu Nov 23 2017 12:10:30 GMT+0000 (UTC)
+[debug] [2017-11-23T12:10:30.519Z] >>> HTTP REQUEST GET https://apikeys.googleapis.com/v1/projects/effex-fb/apiKeys  
+ Thu Nov 23 2017 12:10:30 GMT+0000 (UTC)
+[debug] [2017-11-23T12:10:31.210Z] <<< HTTP RESPONSE 200
+[debug] [2017-11-23T12:10:31.325Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: api
+[info] ✔  functions: apisub
+[debug] [2017-11-24T09:12:19.156Z] ----------------------------------------------------------------------
+[debug] [2017-11-24T09:12:19.159Z] Command:       /home/ubuntu/.nvm/versions/node/v6.11.2/bin/node /home/ubuntu/.nvm/versions/node/v6.11.2/bin/firebase experimental:functions:shell
+[debug] [2017-11-24T09:12:19.160Z] CLI Version:   3.15.2
+[debug] [2017-11-24T09:12:19.160Z] Platform:      linux
+[debug] [2017-11-24T09:12:19.160Z] Node Version:  v6.11.2
+[debug] [2017-11-24T09:12:19.160Z] Time:          Fri Nov 24 2017 09:12:19 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:19.160Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2017-11-24T09:12:19.176Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2017-11-24T09:12:19.176Z] > authorizing via signed-in user
+[debug] [2017-11-24T09:12:19.179Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2017-11-24T09:12:19.180Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/m0hLkKyRK0uPt0Uep986cmNe91-qaQ1Lb-dH-qLdnKT3b4oF6MVgus3CfC087-bD',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Fri Nov 24 2017 09:12:19 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:19.269Z] <<< HTTP RESPONSE 200
+[debug] [2017-11-24T09:12:19.277Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/effex-fb  
+ Fri Nov 24 2017 09:12:19 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:19.870Z] <<< HTTP RESPONSE 200
+[debug] [2017-11-24T09:12:19.871Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/effex-fb/tokens  
+ Fri Nov 24 2017 09:12:19 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:20.934Z] <<< HTTP RESPONSE 200
+[info] i  functions: Preparing to emulate functions.
+[debug] [2017-11-24T09:12:21.703Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/effex-fb  
+ Fri Nov 24 2017 09:12:21 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:21.703Z] >>> HTTP REQUEST GET https://apikeys.googleapis.com/v1/projects/effex-fb/apiKeys  
+ Fri Nov 24 2017 09:12:21 GMT+0000 (UTC)
+[debug] [2017-11-24T09:12:22.400Z] <<< HTTP RESPONSE 200
+[debug] [2017-11-24T09:12:22.495Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: api
+[info] ✔  functions: apisub
