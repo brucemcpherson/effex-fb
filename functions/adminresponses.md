@@ -57,6 +57,7 @@ This gets a profile where authid is the firebase auth ID. Addaccount will create
 ```
 value.accounts[accountId];
 ```
+```
 api.put ("/v2/admin/account?admin=ADMINKEY&authid=uuu")
 ```
 
