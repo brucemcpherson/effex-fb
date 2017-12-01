@@ -327,7 +327,7 @@ module.exports = (function(ns) {
 
     // add the new user to the profile
     const now = new Date().getTime();
-    let addAc, addPr, remAc, remPr;
+    let addAc, addPr, remAc, remPr,updAc;
     
     return db.runTransaction(t => {
 
@@ -341,11 +341,14 @@ module.exports = (function(ns) {
           addPr = missing && options.createProfile;
           remAc = options.removeAccount;
           remPr = options.removeProfile;
+          updAc = options.updateAccount;
           
           // this is bad as we havent a profile, and we cant add it.
           if (missing && !addPr) return pack;
           if (missing && remAc) return pack;
           if (missing && remPr) return pack;
+          if (missing && updAc) return pack;
+      
           if (missing)pack.ok = true;
           if (!pack.ok) return pack;
           
@@ -412,6 +415,26 @@ module.exports = (function(ns) {
             }
             return pack;
           }
+          else if (updAc) {
+             
+             // find the account
+            pack.accountId = options.accountId;
+            manage.errify (
+              pack.value && pack.value.accounts && pack.value.accounts[pack.accountId],
+              "NOT_FOUND",
+              "account " + pack.accountId + " not found",
+              pack
+            );
+            if (pack.ok){
+
+              pack.value.accounts[pack.accountId].active = options.active;
+              pack.value.accounts[pack.accountId].modified = now;
+
+            }
+            
+            return pack;
+            
+          }
           else {
             return pack;
           }
@@ -420,7 +443,7 @@ module.exports = (function(ns) {
           if (!pack.ok) return pack;
           
 
-          if (addPr || addAc || remAc) {
+          if (addPr || addAc || remAc || updAc) {
             // set the updated profiles
             t.set(profileRef_(options.authId), pack.value);
             return pack;

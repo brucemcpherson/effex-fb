@@ -81,6 +81,37 @@ module.exports = (function(ns) {
 
   };
   
+    /**
+   * /admin/profile
+   * need an authID which is the firebase id
+   * if create is true then we're allowed to create a new profile
+   */
+  ns.updateAccount = (params) => {
+    
+    // make sure we have auth and admin
+    const pack = manage.checkPriv (params); 
+    if (!pack.ok) return Promise.resolve (pack);
+    
+    const active = parseInt (params.active,10);
+    // check we have a resource
+    manage.errify (
+      params.hasOwnProperty ("active") && (active === 0 || active ===1 ),
+      "BAD_REQUEST",
+      "need an active=1 or 0 parameter",
+      pack);
+
+    // next we need to get the profile
+    // this wil use the params.create if tru then it will create both
+    // a new profile and a new account (if it doesnt already exit)
+    return dbStore.profile ({
+      authId:params.authid || params.data.authid, 
+      accountId:params.accountid,
+      updateAccount:true, 
+      active:active ? true : false
+    })
+    .catch(err=>Promise.resolve(manage.errify(false,"INTERNAL",err,pack)));
+
+  };
 
   /**
    * /admin/profile
@@ -156,7 +187,8 @@ module.exports = (function(ns) {
     // now to a query based on the accountID (we don't necessary know the authID, so it can't be a direct)
     return dbStore.queryAccounts (pack.accountId)
     .then(result=>{
-      return manage.errify (result.ok , result.code, result.error , pack);
+      manage.errify (result.ok , result.code, result.error , pack);
+      return manage.errify (result.value && result.value.length , "UNAUTHORIZED", "account not active",pack);
     })
     .catch(err=>Promise.resolve (false, "INTERNAL", err ,pack));
 
@@ -1090,6 +1122,7 @@ module.exports = (function(ns) {
 
   };
 
+  // get all the bosses for a given account
   ns.getBosses = (params) => {
     
     // make sure we have auth and admin
@@ -1102,7 +1135,17 @@ module.exports = (function(ns) {
         // this is how to check an account is valid and active
         () => ns.checkAccount(pack),
         
-        pack);
+        pack)
+    .then (pack=>{
+      // lets delete the authid - nobody needs that
+      delete pack.authId;
+      if (!pack.ok)return pack;
+      
+      // need to decode expiry dates for all of these, and we'll sort them too
+      pack.coupons = pack.coupons.map (d=>manage.getCouponPack(d ,params )).sort((a,b)=> a.key > b.key ? 1 : (a.key < b.key ? -1 : 0));
+      return pack;
+      
+    });
         
   };
   

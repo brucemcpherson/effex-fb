@@ -164,7 +164,7 @@ module.exports = ((ns) => {
         };
         
         // metrics
-        rr.metrics = ["ga:metric" + cm.size,"ga:uniqueEvents" ].map (d=> {
+        rr.metrics = ["ga:metric" + cm.size,"ga:totalEvents" ].map (d=> {
           return {
             expression: d
           };
@@ -240,6 +240,7 @@ module.exports = ((ns) => {
                     secrets.analytics.floorWidth
                   ];
                 });
+
                 pack.value = {
                   sampleAdjust:sampleAdjust,
                   columns:columns,

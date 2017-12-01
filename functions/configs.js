@@ -1,6 +1,6 @@
 module.exports = {
     urlVersion:"/v2",
-    version:"2.2.0",
+    version:"2.3.0",
     apiName:"efx",
     platform:"fb",
     plans: {

@@ -171,7 +171,7 @@ module.exports = (function(ns) {
   // PROFILES AND ACCOUNTS
 
   // add an account
-  ns.app.put('/admin/addaccount', function(req, res) {
+  ns.app.put('/admin/account', function(req, res) {
     res.prom(addOp_("admin/addAccount",respond.addAccount(paramSquash_(req)),"set"));
   });
   
@@ -180,6 +180,10 @@ module.exports = (function(ns) {
     res.prom(addOp_("admin/removeAccount",respond.removeAccount(paramSquash_(req)),"remove"));
   });
   
+  // update an account
+  ns.app.put('/admin/account/:accountid', function(req, res) {
+    res.prom(addOp_("admin/updateAccount",respond.updateAccount(paramSquash_(req)),"set"));
+  });
   // check acccount exists and is active
   ns.app.get('/admin/account/:accountid', function(req, res) {
     res.prom(addOp_("admin/getAccount",respond.getAccount(paramSquash_(req))));

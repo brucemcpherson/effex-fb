@@ -21,7 +21,7 @@ module.exports = (function(ns) {
    * @param {object} event a firestore event object
    */
   ns.logEvent = (event) => {
-    console.log('event occurred', event.params.itemid, event);
+
     const data = event.data.data();
     return dbStore.logEvents(event.params.itemid, "update", data.meta.modified )
       .then(pack => {

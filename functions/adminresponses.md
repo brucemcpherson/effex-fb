@@ -14,7 +14,6 @@ this the same, but readonly - so it's not able to  create anything
 api.get ("/v2/admin/profile?admin=ADMINKEY&authid=uuu")
 ```
 
-```
 {
 	"ok": true,
 	"code": 200,
@@ -60,6 +59,7 @@ value.accounts[accountId];
 ```
 api.put ("/v2/admin/account?admin=ADMINKEY&authid=uuu")
 ```
+You can use a post to completely re-write an account respurce
 
 ```
 {
@@ -114,6 +114,24 @@ This returns a subset of the profile for the given account.
 api.get ("/v2/admin/account/3ti?admin=ADMINKEY&authid=uuu")
 ```
 
+{
+	"accountId": "3ti",
+	"ok": true,
+	"code": 200,
+	"value": {
+		"planId": "x",
+		"active": true,
+		"expires": 0,
+		"modified": 1511515549667,
+		"created": 1511515549667
+	},
+	"operation": "admin/getAccount"
+}
+
+## activateAccount
+This updates a given account. For convenience it returns the entire profile. It needs an active parameter which can be 1 or 0
+```
+api.put ("/v2/admin/account/3ti?admin=ADMINKEY&authid=uuu&active=1")
 ```
 {
 	"accountId": "3ti",
@@ -129,7 +147,7 @@ api.get ("/v2/admin/account/3ti?admin=ADMINKEY&authid=uuu")
 	"operation": "admin/getAccount"
 }
 ```
-##removeAccount
+## removeAccount
 This removes the given account, and returns the updated profile, minus the deleted account
 ```
 api.delete ("/v2/admin/account/3tk?admin=ADMINKEY&authid=uuu")
@@ -182,10 +200,16 @@ api.delete ("/v2/admin/account/3tk?admin=ADMINKEY&authid=uuu")
 	"method": "remove"
 }
 ```
-##removeProfile
+## removeProfile
 This removes the given profile
 ```
 api.delete ("/v2/admin/profile?admin=ADMINKEY&authid=uuu")
 ```
 
+```
+{
+	"ok": true,
+	"code": 204,
+	"operation": "admin/removeProfile"
+}
 ```
