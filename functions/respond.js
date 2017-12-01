@@ -178,7 +178,7 @@ module.exports = (function(ns) {
    * @param {object||string} pack the pack so far or an account ID
    * @return {Promise} the updated pack
    */
-  ns.checkAccount = (account) => {
+  ns.checkAccount = (account, acceptInactive) => {
 
     const pack = typeof account === "object" ? account : manage.goodPack ({
       accountId:account
@@ -188,7 +188,7 @@ module.exports = (function(ns) {
     return dbStore.queryAccounts (pack.accountId)
     .then(result=>{
       manage.errify (result.ok , result.code, result.error , pack);
-      return manage.errify (result.value && result.value.length , "UNAUTHORIZED", "account not active",pack);
+      return manage.errify (result.value && (result.value.length || acceptInactive) , "UNAUTHORIZED", "account not active",pack);
     })
     .catch(err=>Promise.resolve (false, "INTERNAL", err ,pack));
 
@@ -1114,8 +1114,8 @@ module.exports = (function(ns) {
      
     return dbStore.pruneBosses(
 
-        // this is how to check an account is valid and active
-        () => ns.checkAccount(pack),
+        // this is how to check an account is valid - donr care if its active
+        () => ns.checkAccount(pack, true),
         
         pack);
         
